@@ -13,7 +13,7 @@ files=(
     "t10k-labels-idx1-ubyte.gz"
 )
 
-
+mkdir mnist
 
 for f in ${files[@]}
 do
