@@ -1,9 +1,15 @@
 from loader import load_images
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
 
 if __name__ == '__main__':
-    data = load_images("mnist/t10k-images-idx3-ubyte")
-    image = np.array(data[2]).squeeze()
-    plt.imshow(image)
+    (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
+    plt.figure()
+    plt.imshow(x_train[0])
+    plt.colorbar()
+    plt.grid(False)
+    plt.show()
+
     plt.show()
