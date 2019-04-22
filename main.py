@@ -9,6 +9,15 @@ from tensorflow.python.keras.engine.saving import load_model
 from tensorflow.python.keras.layers import Dense
 
 
+class LossHistory(keras.callbacks.Callback):
+    def __init__(self):
+        super().__init__()
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
+
 def autoencoder():
     input_image = Input(shape=(784,))
     # Encoder
@@ -41,8 +50,11 @@ if __name__ == '__main__':
     x_train = x_train.astype('float32') / 255
     x_test = x_test.astype('float32') / 255
     encoder, autoenc = autoencoder()
+    lossHistory = LossHistory()
     autoenc.summary()
-    autoenc.fit(x_train, x_train, epochs=100, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
+    epochs = 100
+    autoenc.fit(x_train, x_train, epochs= epochs, batch_size=128, shuffle=True, validation_data=(x_test, x_test),
+                callbacks=[lossHistory])
 
     autoencoded_images = autoenc.predict(x_test[0:10]).reshape((10, 28, 28))
     # encoded_images = encoder.predict(x_test[0:10]).reshape((10, 28, 28))
@@ -57,5 +69,7 @@ if __name__ == '__main__':
         # im2.title("image encodée ")
         plt.show()
 
+    plt.plot(lossHistory.losses)
+    plt.show()
     encoder.save("encoder_model")
     autoenc.save("autoencoder_model")
