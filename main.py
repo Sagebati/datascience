@@ -1,14 +1,61 @@
+from os import path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.python.keras import Input, Model
+from tensorflow.python.keras.engine.saving import load_model
+from tensorflow.python.keras.layers import Dense
+
+
+def autoencoder():
+    input_image = Input(shape=(784,))
+    # Encoder
+    encoder = Dense(units=128, activation='relu')(input_image)
+    encoder = Dense(units=64, activation='relu')(encoder)
+    encoder = Dense(units=32, activation='relu')(encoder)
+
+    # Decoder
+    decoder = Dense(units=64, activation='relu')(encoder)
+    decoder = Dense(units=128, activation='relu')(decoder)
+    decoder = Dense(units=784, activation='sigmoid')(decoder)
+
+    enc = Model(
+        input_image, encoder
+    )
+
+    autoenc = Model(
+        input_image, decoder
+    )
+
+    autoenc.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['accuracy'])
+
+    return enc, autoenc
+
 
 if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
-    plt.figure()
-    plt.imshow(x_train[0])
-    plt.colorbar()
-    plt.grid(False)
-    plt.show()
+    x_train = np.reshape(x_train, (60000, 784))
+    x_test = np.reshape(x_test, (10000, 784))
+    x_train = x_train.astype('float32') / 255
+    x_test = x_test.astype('float32') / 255
+    encoder, autoenc = autoencoder()
+    autoenc.summary()
+    autoenc.fit(x_train, x_train, epochs=10, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
 
-    plt.show()
+    autoencoded_images = autoenc.predict(x_test[0:10]).reshape((10, 28, 28))
+    # encoded_images = encoder.predict(x_test[0:10]).reshape((10, 28, 28))
+    for i in range(0, 10):
+        figure = plt.figure()
+        im1 = figure.add_subplot(2, 1, 1)
+        im1.imshow(x_test[i].reshape((28, 28)) * 255)
+        # im1.title("image pas encodée")
+        im2 = figure.add_subplot(2, 1, 2)
+        im2.imshow(autoencoded_images[i].reshape((28, 28)) * 255)
+        #   plt.imshow(encoded_images[i] * 255)
+        # im2.title("image encodée ")
+        plt.show()
+
+    encoder.save("encoder_model")
+    autoenc.save("autoencoder_model")
