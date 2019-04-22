@@ -42,7 +42,7 @@ if __name__ == '__main__':
     x_test = x_test.astype('float32') / 255
     encoder, autoenc = autoencoder()
     autoenc.summary()
-    autoenc.fit(x_train, x_train, epochs=10, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
+    autoenc.fit(x_train, x_train, epochs=100, batch_size=256, shuffle=True, validation_data=(x_test, x_test))
 
     autoencoded_images = autoenc.predict(x_test[0:10]).reshape((10, 28, 28))
     # encoded_images = encoder.predict(x_test[0:10]).reshape((10, 28, 28))
